@@ -348,7 +348,7 @@ game() {
 
 		#status line
 		mvprintw "$status_line" 0 $'\x1b[2K'
-		mvprintw "$status_line" 0 "xyg:$px,$py,$pog score:$score pxyv:$pxv,$pyv ${PROGURL##https://}"
+		mvprintw "$status_line" 0 "xyg:$px,$py,$pog score:$score vxy:$pxv,$pyv ${PROGURL##https://}"
 	done
 }
 
