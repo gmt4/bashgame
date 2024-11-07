@@ -1,7 +1,7 @@
 #!/bin/bash --noprofile
 #
 # @file BashGame
-# @description Remake/Tribute to the original game from gist.github.com/SomeCrazyGuy
+# @description Remake/Tribute to the original from gist.github.com/SomeCrazyGuy
 # @author gmt4 <gmt4 at github.com> (c) Copyright 2024
 # @url github.com/gmt4/BashGame
 #
@@ -10,6 +10,11 @@
 # A plataformer in bash: "Collect all the coins, and reach the other side!!"
 # This version adds color, get ready, you won, and game over messages ASCII art
 #
+
+PROGNAME=${0##*/}
+PROGVERSION=v1.0
+PROGAUTHOR=gmt4
+PROGURL="https://github.com/gmt4/bashgame"
 
 #extra strict flags
 set -euo pipefail
@@ -53,7 +58,7 @@ EOF
 )
 
 
-get_ready_legend="Collect all the coins, and reach the other side!!"
+get_ready_legend="Welcome Adventurer $USER, Collect all the coins, and reach the other side!!"
 get_ready=$(
 cat <<"EOF"
 ##################################################
@@ -69,7 +74,7 @@ EOF
 )
 
 #less ambitious art this time
-game_over_legend="You fell into the pit, landed on a spike, and became less of an adventurer."
+game_over_legend="$USER fell into the pit, landed on a spike, and became less of an adventurer."
 game_over=$(
 cat <<"EOF"
 ##################################################
@@ -174,6 +179,13 @@ draw_level() {
 	done
 }
 
+draw_color() {
+    sed \
+        -e 's/\$/\x1b[00;33m$\x1b[0m/g;' \
+        -e 's/#/\x1b[00;36m#\x1b[0m/g;' \
+        -e 's/\^/\x1b[00;35m^\x1b[0m/g;'
+}
+
 #usage: checktile $row $col
 checktile() {
 	local row=$1
@@ -199,7 +211,7 @@ checktile() {
 	return
 }
 
-main() {
+game() {
 	local px=1 #player X coordinate
 	local py=0 #player Y coordinate
 	local pxv=0 #player X velocity
@@ -234,7 +246,7 @@ main() {
 	twidle 1 3 ' '
 	twidle 1 4 ' '
 
-	draw_level | sed 's/\$/\x1b[00;33m$\x1b[0m/g; s/#/\x1b[00;36m#\x1b[0m/g; s/\^/\x1b[00;35m^\x1b[0m/g;'
+	draw_level | draw_color
 
 	#main loop
 	while true
@@ -336,8 +348,24 @@ main() {
 
 		#status line
 		mvprintw "$status_line" 0 $'\x1b[2K'
-		mvprintw "$status_line" 0 "px: $px  py: $py  pog: $pog  score: $score  pxv: $pxv  pyv: $pyv"
+		mvprintw "$status_line" 0 "xyg:$px,$py,$pog score:$score pxyv:$pxv,$pyv ${PROGURL##https://}"
 	done
+}
+
+
+usage()
+{
+    echo "usage: $PROGNAME opts # @version $PROGVERSION (c) $PROGAUTHOR $PROGURL"
+    exit
+}
+
+main()
+{
+    case "${1:-}" in
+    *help|*usage) usage ;;
+    *version)     usage ;;
+    *)            game "$@" ;;
+    esac
 }
 
 main "$@"
