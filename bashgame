@@ -26,16 +26,21 @@ declare -a level
 declare -i lv_w=0 #width of level
 declare -i lv_h=0 #height of level
 declare -i status_line=0
+declare -i lives=0 #lives
+declare -i coins=0 #coins
+declare -i ammo=0  #ammo
 nextTile=''
 
 #constants, added after the fact to improve tweaking the numbers
 kFPSdelay='0.03'  #DEFAULT: 0.03, 33 FPS - good setting
+kPlayerBlock='@'  #DEFAULT: '@" - the player
 kBarrierBlock='#' #DEFAULT: '#' - the block you can stand on
 kEmptyBlock=' '   #DEFAULT: ' ' - air
 kCoinBlock='$'    #DEFAULT: '$' - it's not a platformer unless you can increment a variable
 kSpikeBlock='^'   #DEFAULT: '^' - instant death when touching this
 kWinBlock='%'     #DEFAULT: '%' - instant win when touching this
 kUpVelocity=-25   #DEFAULT: -25 - could be too high
+kDownVelocity=5   #DEFAULT: -5
 kLeftVelocity=-5  #DEFAULT: -5
 kRightVelocity=5  #DEFAULT: 5
 kGravityFPSMod=5  #DEFAULT: 5 - provides a delay when falling
@@ -44,6 +49,7 @@ kVelocityMod=5    #DEFAULT: 5
 
 #Art is hard
 
+you_won_legend="Goodspeed Adventurer $USER, you won the game!!"
 you_won=$(
 cat <<"EOF"
 ##################################################
@@ -127,12 +133,14 @@ gen_level() {
 	do
 		for (( x=0; x<lv_w; ++x ))
 		do
-			foo=$((RANDOM % 4))
+			foo=$((RANDOM % 6))
 			case "$foo" in
 				( 0 ) rowstr+="$kBarrierBlock" ;;
-				( 1 ) rowstr+="$kEmptyBlock" ;;
+				( 1 ) rowstr+="$kBarrierBlock" ;;
 				( 2 ) rowstr+="$kEmptyBlock" ;;
-				( 3 ) rowstr+="$kCoinBlock" ;;
+				( 3 ) rowstr+="$kEmptyBlock" ;;
+				( 4 ) rowstr+="$kCoinBlock"; coins=$((coins+1)) ;;
+				( 5 ) rowstr+="$kCoinBlock"; coins=$((coins+1)) ;;
 			esac
 		done
 
@@ -144,7 +152,6 @@ gen_level() {
 		rowstr+="$kSpikeBlock"
 	done
 	level[(( lv_h - 1 ))]="$rowstr"
-	rowstr=''
 }
 
 #usage: twidle $row $col $replace_char
@@ -170,20 +177,23 @@ draw_player() {
 	#7	Reverse                #35	Magenta          #45	Magenta
 	#8	Hidden                 #36	Cyan             #46	Cyan
 	#                          #37	White            #47	White
-	mvprintw "$1" "$2" $'\x1b[32m@\x1b[0m'
+	mvprintw "$1" "$2" $'\x1b[32m'$kPlayerBlock$'\x1b[0m'
 }
 
 draw_level() {
 	for (( x=0; x<lv_h; ++x ))
-	do draw_row "$x"
+	do
+        draw_row "$x"
 	done
 }
 
 draw_color() {
+    if [ -n "${NO_COLOR:-}" ]; then cat; fi
     sed \
-        -e 's/\$/\x1b[00;33m$\x1b[0m/g;' \
-        -e 's/#/\x1b[00;36m#\x1b[0m/g;' \
-        -e 's/\^/\x1b[00;35m^\x1b[0m/g;'
+        -e "s/\\$kCoinBlock/\x1b[00;33m$kCoinBlock\x1b[0m/g;" \
+        -e "s/$kBarrierBlock/\x1b[00;36m$kBarrierBlock\x1b[0m/g;" \
+        -e "s/\\$kSpikeBlock/\x1b[00;35m$kSpikeBlock\x1b[0m/g;" \
+        -e "s/$kWinBlock/\x1b[00;34m$kWinBlock\x1b[0m/g;"
 }
 
 #usage: checktile $row $col
@@ -261,7 +271,7 @@ game() {
 						if read -r -s -N1 -t '0.1'
 						then case "$REPLY" in
 							( 'A' )	(( pog == 1 )) && pyv=$kUpVelocity ;; #up
-							( 'B' ) ;; #down, no use yet
+							( 'B' ) pyv=$kDownVelocity ;; #down
 							( 'C' ) pxv=$kRightVelocity ;; #right
 							( 'D' ) pxv=$kLeftVelocity ;; #left
 							esac
@@ -270,6 +280,7 @@ game() {
 					esac
 				fi
 				;;
+            ( ' ' ) px=$(( RANDOM % lv_w )); py=$(( RANDOM % lv_h )); ;; #teleport
 			esac
 		fi
 
@@ -332,6 +343,7 @@ game() {
 			( "$kWinBlock" ) #win
 				mvprintw 0 0 $'\x1b[2J'
 				echo -e "$you_won"
+				echo -e "$you_won_legend"
 				echo "Final Score: $score"
 				break
 				;;
@@ -346,12 +358,13 @@ game() {
 			py=$npy
 		fi
 
+        game_status="xyg:$px,$py,$pog "$'\x1b[00;32m@\x1b[0m'":$lives "$'\x1b[00;33m$\x1b[0m'":$score "$'\x1b[00;31m*\x1b[0m'":$ammo vxy:$pxv,$pyv"
+
 		#status line
 		mvprintw "$status_line" 0 $'\x1b[2K'
-		mvprintw "$status_line" 0 "xyg:$px,$py,$pog score:$score vxy:$pxv,$pyv ${PROGURL##https://}"
+        mvprintw "$status_line" 0 "$PROGAUTHOR/$PROGNAME $PROGVERSION $game_status"
 	done
 }
-
 
 usage()
 {
@@ -362,9 +375,9 @@ usage()
 main()
 {
     case "${1:-}" in
-    *help|*usage) usage ;;
-    *version)     usage ;;
-    *)            game "$@" ;;
+    -h|*help|*usage) usage ;;
+    -v|*version)     usage ;;
+    *)               game "$@" ;;
     esac
 }
 
