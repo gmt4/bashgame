@@ -1,9 +1,9 @@
-#!/bin/bash --noprofile
+#!/usr/bin/env -S bash --restricted --noprofile
 #
-# @file BashGame
+# @file bashgame
 # @description Remake/Tribute to the original from gist.github.com/SomeCrazyGuy
 # @author gmt4 <gmt4 at github.com> (c) Copyright 2024
-# @url github.com/gmt4/BashGame
+# @url github.com/gmt4/bashgame
 #
 # Original https://gist.github.com/SomeCrazyGuy/4c844da3c181912579c0e324f17f39a6#file-bash_game
 #
@@ -45,7 +45,6 @@ kLeftVelocity=-5  #DEFAULT: -5
 kRightVelocity=5  #DEFAULT: 5
 kGravityFPSMod=5  #DEFAULT: 5 - provides a delay when falling
 kVelocityMod=5    #DEFAULT: 5
-
 
 #Art is hard
 
@@ -170,7 +169,7 @@ draw_player() {
 	#7	Reverse                #35	Magenta          #45	Magenta
 	#8	Hidden                 #36	Cyan             #46	Cyan
 	#                          #37	White            #47	White
-	mvprintw "$1" "$2" $'\x1b[32m'$kPlayerBlock$'\x1b[0m'
+	mvprintw "$1" "$2" $'\x1b[01;32m'$kPlayerBlock$'\x1b[0m'
 }
 
 draw_level() {
@@ -181,12 +180,16 @@ draw_level() {
 }
 
 draw_color() {
-    if [ -n "${NO_COLOR:-}" ]; then cat; fi
-    sed \
-        -e "s/\\$kCoinBlock/\x1b[00;33m$kCoinBlock\x1b[0m/g;" \
-        -e "s/$kBarrierBlock/\x1b[00;36m$kBarrierBlock\x1b[0m/g;" \
-        -e "s/\\$kSpikeBlock/\x1b[00;35m$kSpikeBlock\x1b[0m/g;" \
-        -e "s/$kWinBlock/\x1b[00;34m$kWinBlock\x1b[0m/g;"
+    if [ -n "${NO_COLOR:-}" ];
+    then
+        sed '';
+    else
+        sed \
+            -e "s/$kWinBlock/\x1b[00;34m$kWinBlock\x1b[0m/g;" \
+            -e "s/\\$kCoinBlock/\x1b[00;33m$kCoinBlock\x1b[0m/g;" \
+            -e "s/\\$kSpikeBlock/\x1b[00;35m$kSpikeBlock\x1b[0m/g;" \
+            -e "s/$kBarrierBlock/\x1b[00;36m$kBarrierBlock\x1b[0m/g;"
+    fi
 }
 
 #usage: checktile $row $col
