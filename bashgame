@@ -50,8 +50,7 @@ kVelocityMod=5    #DEFAULT: 5
 #Art is hard
 
 you_won_legend="Goodspeed Adventurer $USER, you won the game!!"
-you_won=$(
-cat <<"EOF"
+you_won='
 ##################################################
 # __  __               _       __            __
 # \ \/ /___  __  __   | |     / /___  ____  / /
@@ -60,13 +59,10 @@ cat <<"EOF"
 # /_/\____/\__,_/     |__/|__/\____/_/ /_(_)
 #
 ##################################################
-EOF
-)
-
+'
 
 get_ready_legend="Welcome Adventurer $USER, Collect all the coins, and reach the other side!!"
-get_ready=$(
-cat <<"EOF"
+get_ready='
 ##################################################
 #    ______     __     ____                 __      __
 #   / ____/__  / /_   / __ \___  ____ _____/ /_  __/ /
@@ -76,13 +72,11 @@ cat <<"EOF"
 #                                         /____/
 #
 ##################################################
-EOF
-)
+'
 
 #less ambitious art this time
 game_over_legend="$USER fell into the pit, landed on a spike, and became less of an adventurer."
-game_over=$(
-cat <<"EOF"
+game_over='
 ##################################################
 #    ______                        ____
 #   / ____/___ _____ ___  ___     / __ \_   _____  _____
@@ -91,8 +85,7 @@ cat <<"EOF"
 # \____/\__,_/_/ /_/ /_/\___/   \____/ |___/\___/_/
 #
 ##################################################
-EOF
-)
+'
 
 #move the cursor to a specific row and colunm
 put_cursor() {
