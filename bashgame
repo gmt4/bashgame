@@ -146,6 +146,17 @@ gen_level() {
 	level[(( lv_h - 1 ))]="$rowstr"
 }
 
+load_level() {
+	local y=0
+	local rowstr=''
+	while read -r rowstr
+	do
+		level[$y]="$rowstr"
+		y=$((y+1))
+		if [ $y -eq $lv_h  ]; then break; fi
+	done
+}
+
 #usage: twidle $row $col $replace_char
 twidle() {
 	local row="$1"
@@ -160,22 +171,22 @@ twidle() {
 
 #usage: draw_player $row $col
 draw_player() {
-	#Display Attribtes         #Foreground Colours   #Background Colours
-	#0	Reset all attributes   #30	Black            #40	Black
-	#1	Bright                 #31	Red              #41	Red
-	#2	Dim                    #32	Green            #42	Green
-	#4	Underscore	           #33	Yellow           #43	Yellow
-	#5	Blink                  #34	Blue             #44	Blue
-	#7	Reverse                #35	Magenta          #45	Magenta
-	#8	Hidden                 #36	Cyan             #46	Cyan
-	#                          #37	White            #47	White
+	#Display Attrs       #Fg Colours   #Bg Colours
+	#0 Reset all attrs   #30 Black     #40 Black
+	#1 Bright            #31 Red       #41 Red
+	#2 Dim               #32 Green     #42 Green
+	#4 Underscore	     #33 Yellow    #43 Yellow
+	#5 Blink             #34 Blue      #44 Blue
+	#6                   #35 Magenta   #45 Magenta
+	#7 Reverse           #36 Cyan      #46 Cyan
+	#8 Hidden            #37 White     #47 White
 	mvprintw "$1" "$2" $'\x1b[01;32m'$kPlayerBlock$'\x1b[0m'
 }
 
 draw_level() {
-	for (( x=0; x<lv_h; ++x ))
+	for (( y=0; y<lv_h; ++y ))
 	do
-        draw_row "$x"
+        draw_row "$y"
 	done
 }
 
@@ -238,19 +249,19 @@ game() {
 
 	init_screen
 
-	gen_level
+    if [ $# -eq 0 ]
+    then
+        gen_level
+    else
+        load_level < "$1"
+    fi
 
 	#make spawnpoint safe
-	twidle 0 0 ' '
-	twidle 0 1 ' '
-	twidle 0 2 ' '
-	twidle 0 3 ' '
-	twidle 0 4 ' '
-	twidle 1 0 ' '
-	twidle 1 1 ' '
-	twidle 1 2 ' '
-	twidle 1 3 ' '
-	twidle 1 4 ' '
+	for (( y=0; y<3; ++y ))
+	do
+        twidle 0 "$y" ' '
+        twidle 1 "$y" ' '
+	done
 
 	draw_level | draw_color
 
@@ -276,7 +287,11 @@ game() {
 					esac
 				fi
 				;;
-            ( ' ' ) px=$(( RANDOM % lv_w )); py=$(( RANDOM % lv_h )); ;; #teleport
+			( ' ' )
+				#teleport
+				px=$(( px + RANDOM % (lv_w-px) ))
+				py=$(( RANDOM % (py+1) ))
+				;;
 			esac
 		fi
 
