@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# @file bashgame gen
+# @description bashgame level gen
+# @author gmt4 <gmt4 at github.com> (c) Copyright 2024
+# @url github.com/gmt4/bashgame
+#
+
+awk '
+    function gen_row(lx,str)
+    {
+        for (x=0; x<lx; x++)
+        {
+            n = split(str, a, "")
+            i = int(1+rand()*n)
+            c = a[i]
+            printf c
+        }
+    }
+
+    function gen_level(lx,ly)
+    {
+        for (y=0; y<ly; y++)
+        {
+            if(y<3&&i%2)  gen_row(lx,"         ###$");
+            else if (y<6) gen_row(lx,"     #######$");
+            else if (y<10)gen_row(lx," $$$$$$$$###$");
+            else if (y<13)gen_row(lx,"  ^%########$");
+            else          gen_row(lx,"^^^^^^######$");
+
+            printf "\n"
+        }
+    }
+
+    BEGIN{
+        s=srand()
+        gen_level(58,14)
+    }'
