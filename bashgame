@@ -375,6 +375,9 @@ game() {
 		mvprintw "$status_line" 0 $'\x1b[2K'
         mvprintw "$status_line" 0 "$PROGAUTHOR/$PROGNAME $PROGVERSION $game_status"
 	done
+
+	# enable text cursor
+	echo -en '\e[?25h'
 }
 
 usage()
