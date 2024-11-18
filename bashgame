@@ -8,7 +8,7 @@
 # Original https://gist.github.com/SomeCrazyGuy/4c844da3c181912579c0e324f17f39a6#file-bash_game
 #
 # A plataformer in bash: "Collect all the coins, and reach the other side!!"
-# This version adds color, get ready, you won, and game over messages ASCII art
+# This version adds color, and game banners ASCII art
 #
 
 PROGNAME=${0##*/}
@@ -36,6 +36,7 @@ kFPSdelay='0.03'  #DEFAULT: 0.03, 33 FPS - good setting
 kPlayerBlock='@'  #DEFAULT: '@" - the player
 kBarrierBlock='#' #DEFAULT: '#' - the block you can stand on
 kEmptyBlock=' '   #DEFAULT: ' ' - air
+kAmmoBlock='*'    #DEFAULT: '*' - ammunition used to break blocks/walls, fired with [asdf]
 kCoinBlock='$'    #DEFAULT: '$' - it's not a platformer unless you can increment a variable
 kSpikeBlock='^'   #DEFAULT: '^' - instant death when touching this
 kWinBlock='%'     #DEFAULT: '%' - instant win when touching this
@@ -207,6 +208,7 @@ draw_color() {
         sed \
             -e "s/$kWinBlock/\x1b[00;34m$kWinBlock\x1b[0m/g;" \
             -e "s/\\$kCoinBlock/\x1b[00;33m$kCoinBlock\x1b[0m/g;" \
+			-e "s/\\$kAmmoBlock/\x1b[00;31m$kAmmoBlock\x1b[0m/g;" \
             -e "s/\\$kSpikeBlock/\x1b[00;35m$kSpikeBlock\x1b[0m/g;" \
             -e "s/$kBarrierBlock/\x1b[00;36m$kBarrierBlock\x1b[0m/g;"
     fi
@@ -268,8 +270,8 @@ game() {
 	#make spawnpoint safe
 	for (( y=0; y<3; ++y ))
 	do
-        twidle 0 "$y" ' '
-        twidle 1 "$y" ' '
+        twidle 0 "$y" '*'
+        twidle 1 "$y" '*'
 	done
 
 	draw_level | draw_color
@@ -296,10 +298,28 @@ game() {
 					esac
 				fi
 				;;
-			( ' ' ) #teleport
+			( ' ' ) # teleport
 				px=$(( px + RANDOM % (lv_w-px) ))
 				py=$(( RANDOM % (py+1) ))
 				;;
+
+			( a ) # ammo left
+				twidle $py $((px-1)) '&'
+				ammo=$((ammo-1))
+				;;
+			( s ) # ammo down
+				twidle $((py+1)) $px '&'
+				ammo=$((ammo-1))
+				;;
+			( d ) # ammo right
+				twidle $py $((px+1)) '&'
+				ammo=$((ammo-1))
+				;;
+			( w ) # ammo up
+				twidle $((py-1)) $px '&'
+				ammo=$((ammo-1))
+				;;
+
 			( q|Q ) # quit
                 break ;;
 			( h|H ) # help
@@ -355,6 +375,10 @@ game() {
 			( "$kCoinBlock" )
 				twidle $npy $npx ' '
 				score=$((score+1))
+				;;
+			( "$kAmmoBlock" )
+				twidle $npy $npx ' '
+				ammo=$((ammo+1))
 				;;
 			( "$kSpikeBlock" ) #lose
 				mvprintw 0 0 $'\x1b[2J'
