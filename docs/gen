@@ -6,7 +6,8 @@
 # @url github.com/gmt4/bashgame
 #
 
-awk '
+awk -v lx="${1:-58}" -v ly="${2:-14}" \
+'
     function gen_row(lx,str)
     {
         for (x=0; x<lx; x++)
@@ -22,11 +23,11 @@ awk '
     {
         for (y=0; y<ly; y++)
         {
-            if(y<3&&i%2)  gen_row(lx,"         ###$");
-            else if (y<6) gen_row(lx,"     #######$");
-            else if (y<10)gen_row(lx," $$$$$$$$###$");
-            else if (y<13)gen_row(lx,"  ^%########$");
-            else          gen_row(lx,"^^^^^^######$");
+            if(y<3&&i%2)  gen_row(lx," ###########*$");
+            else if (y<5) gen_row(lx,"############*$");
+            else if (y<10)gen_row(lx," $$$$$$$$####$");
+            else if (y<13)gen_row(lx,"  ^%#########$");
+            else          gen_row(lx,"^^^^^^#######$");
 
             printf "\n"
         }
@@ -34,5 +35,5 @@ awk '
 
     BEGIN{
         s=srand()
-        gen_level(58,14)
+        gen_level(lx,ly)
     }'
