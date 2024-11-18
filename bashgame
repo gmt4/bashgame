@@ -86,6 +86,9 @@ game_over='
 ##################################################
 '
 
+warn() { printf "$@" >&2; }
+die()  { e=$1; shift; warn "$@"; exit "$e"; }
+
 #move the cursor to a specific row and colunm
 put_cursor() {
 	echo -en "\e[${1};${2}f"
@@ -155,6 +158,12 @@ load_level() {
 		y=$((y+1))
 		if [ $y -eq $lv_h  ]; then break; fi
 	done
+
+    if [ $y -lt $lv_h ]
+    then
+        die 0 "\r$PROGNAME: error level only defines $y rows while term height is $lv_h rows\n"
+    fi
+
 }
 
 #usage: twidle $row $col $replace_char
@@ -287,11 +296,14 @@ game() {
 					esac
 				fi
 				;;
-			( ' ' )
-				#teleport
+			( ' ' ) #teleport
 				px=$(( px + RANDOM % (lv_w-px) ))
 				py=$(( RANDOM % (py+1) ))
 				;;
+			( q|Q ) # quit
+                break ;;
+			( h|H ) # help
+                break ;;
 			esac
 		fi
 
