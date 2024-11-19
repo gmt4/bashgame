@@ -1,3 +1,9 @@
+![GitHub](https://img.shields.io/github/license/gmt4/bashgame)
+![GitHub Release Date](https://img.shields.io/github/release-date/gmt4/bashgame)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/gmt4/bashgame)
+![GitHub top language](https://img.shields.io/github/languages/top/gmt4/bashgame)
+![GitHub lines of Code](https://sloc.xyz/github/gmt4/bashgame/?category=code)
+
 # BashGame
 
 A plataformer game in bash (original by [SomeCrazyGuy](https://gist.github.com/SomeCrazyGuy))
